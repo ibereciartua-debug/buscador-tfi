@@ -400,7 +400,10 @@ function buildQuery(db, tags){
   // PubMed: sin comillas automáticas para conservar Automatic Term Mapping (ATM).
   // La guía de PubMed recomienda búsquedas simples por conceptos y filtros dentro del portal.
   const rawTerms = tags.map(t=>getTermForDB(db, t)).filter(Boolean);
-  const terms = (db.id === 'pubmed') ? rawTerms : rawTerms.map(quoteTerm);
+  // Sin comillas automáticas en bases donde la frase exacta restringe demasiado.
+  // PubMed conserva ATM; SciELO y Redalyc recuperan mejor con búsqueda abierta.
+  const noQuoteDBs = ['pubmed', 'scielo', 'redalyc'];
+  const terms = noQuoteDBs.includes(db.id) ? rawTerms : rawTerms.map(quoteTerm);
   if(selMode === 'and') return terms.join(' AND ');
   if(selMode === 'or') return terms.join(' OR ');
   return terms[0] || '';
